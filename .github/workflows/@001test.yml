@@ -1,0 +1,18 @@
+name: Display Environment Name
+
+on:
+    workflow_dispatch:
+
+jobs:
+    display_env_name:
+        runs-on: ubuntu-latest
+        environment: ${{ github.ref == 'refs/heads/main' && 'Prod' || 'Lab' }}
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            - name: Display Variable
+              run: echo ${{ env.ENVIRONMENT }}
+
+
