@@ -17,11 +17,11 @@ jobs:
               if: vars.ENVIRONMENTNAME == 'bchealth-cloud-azure-alz-lab'
               run: 
                 echo ${{ vars.ENVIRONMENTNAME }}
-                echo join(${{ vars.ENVIRONMENTNAME }},'-network-bchealth')
+                echo join('${{ vars.ENVIRONMENTNAME }}'','-network-bchealth')
 
             - name: Display Variable for Prod
               if: vars.ENVIRONMENTNAME == 'bchealth-cloud-azure-alz-main'
               run: 
                 echo ${{ vars.ENVIRONMENTNAME }}
-                echo join(${{ vars.ENVIRONMENTNAME }},'-network-bchealth')
+                echo join('${{ vars.ENVIRONMENTNAME }}'','-network-bchealth')
 
