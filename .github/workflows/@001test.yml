@@ -13,13 +13,7 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v3
 
-            - name: Display Variable for Lab
-              if: vars.ENVIRONMENTNAME == 'bchealth-cloud-azure-alz-lab'
+            - name: Display Variable
               run: 
-                echo ${{ vars.ENVIRONMENTNAME }}-network-bchealth
-
-            - name: Display Variable for Prod
-              if: vars.ENVIRONMENTNAME == 'bchealth-cloud-azure-alz-main'
-              run: 
-                echo ${{ vars.ENVIRONMENTNAME }}-network-bchealth
+                echo ${{ vars.ENVIRONMENTNAME }}
 

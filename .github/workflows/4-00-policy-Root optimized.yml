@@ -1,0 +1,152 @@
+# ----------------------------------------------------------------------------------
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+#
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, 
+# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES 
+# OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+# ----------------------------------------------------------------------------------
+
+name: 4-00 - Policy Root
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: pwsh
+    working-directory: scripts/deployments
+
+jobs:
+
+  Custom_Policy_Definitions:
+    name: Custom policy definitions
+    environment: ${{ github.ref == 'refs/heads/main' && 'Prod' || 'Lab' }}
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure PowerShell modules
+      run: |
+        Install-Module Az -Force
+        Install-Module powershell-yaml -Force
+
+    - name: Deploy policy definitions
+      run: |
+        ./RunWorkflows.ps1 `
+          -DeployCustomPolicyDefinitions `
+          -EnvironmentName '${{vars.ENVIRONMENTNAME}}' `
+          -LoginServicePrincipalJson (ConvertTo-SecureString -String '${{secrets.ALZ_SPN_CREDENTIALS}}' -AsPlainText -Force) `
+          -GitHubRepo ${env:GITHUB_REPOSITORY} `
+          -GitHubRef ${env:GITHUB_REF}
+
+  Custom_Policy_Set_Definitions:
+    name: Define custom Policysets
+    environment: ${{ github.ref == 'refs/heads/main' && 'Prod' || 'Lab' }}
+    needs: Custom_Policy_Definitions
+
+    strategy:
+      matrix:
+        policySetDefinitionName:
+          - LogAnalytics
+          - Network
+          - Tags
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure PowerShell modules
+      run: |
+        Install-Module Az -Force
+        Install-Module powershell-yaml -Force
+
+    - name: Deploy policy set definition
+      run: |
+        ./RunWorkflows.ps1 `
+          -DeployCustomPolicySetDefinitions `
+          -CustomPolicySetDefinitionNames '${{ matrix.policySetDefinitionName }}' `
+          -EnvironmentName '${{vars.ENVIRONMENTNAME}}' `
+          -LoginServicePrincipalJson (ConvertTo-SecureString -String '${{secrets.ALZ_SPN_CREDENTIALS}}' -AsPlainText -Force) `
+          -GitHubRepo ${env:GITHUB_REPOSITORY} `
+          -GitHubRef ${env:GITHUB_REF}
+
+  Custom_Policy_Set_Assignments:
+    name: Assign custom policyset
+    environment: ${{ github.ref == 'refs/heads/main' && 'Prod' || 'Lab' }}
+    needs:
+      - Custom_Policy_Definitions
+      - Custom_Policy_Set_Definitions
+
+    strategy:
+      matrix:
+        policySetAssignmentName:
+          - ${{ vars.PolicyPrefix }}-network-root-audit
+          - ${{ vars.PolicyPrefix }}-tags-root-audit
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure PowerShell modules
+      run: |
+        Install-Module Az -Force
+        Install-Module powershell-yaml -Force
+
+    - name: Deploy policy set assignment in Lab Environment
+      run: |
+        ./RunWorkflows.ps1 `
+          -DeployCustomPolicySetAssignments `
+          -CustomPolicySetAssignmentNames '${{ matrix.policySetAssignmentName }}' `
+          -EnvironmentName '${{vars.ENVIRONMENTNAME}}' `
+          -LoginServicePrincipalJson (ConvertTo-SecureString -String '${{secrets.ALZ_SPN_CREDENTIALS}}' -AsPlainText -Force) `
+          -GitHubRepo ${env:GITHUB_REPOSITORY} `
+          -GitHubRef ${env:GITHUB_REF} `
+          -CustomPolicySetAssignmentManagementGroupId '${{ vars.RootManagementGroupID }}'
+
+  Builtin_Policy_Set_Assignments:
+    name: Assign built-in policyset
+    environment: ${{ github.ref == 'refs/heads/main' && 'Prod' || 'Lab' }}
+
+    strategy:
+      matrix:
+        policySetAssignmentName:
+          - ${{ vars.PolicyPrefix }}-asb-root-audit
+          - ${{ vars.PolicyPrefix }}-pbmm-root-audit
+          - ${{ vars.PolicyPrefix }}-cis-msft-130-root-audit
+          - ${{ vars.PolicyPrefix }}-location-root-audit
+          - ${{ vars.PolicyPrefix }}-nist80053r5-root-audit
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure PowerShell modules
+      run: |
+        Install-Module Az -Force
+        Install-Module powershell-yaml -Force
+
+    - name: Deploy policy set assignment
+      run: |
+        ./RunWorkflows.ps1 `
+          -DeployBuiltinPolicySetAssignments `
+          -BuiltinPolicySetAssignmentNames '${{ matrix.policySetAssignmentName }}' `
+          -EnvironmentName '${{vars.ENVIRONMENTNAME}}' `
+          -LoginServicePrincipalJson (ConvertTo-SecureString -String '${{secrets.ALZ_SPN_CREDENTIALS}}' -AsPlainText -Force) `
+          -GitHubRepo ${env:GITHUB_REPOSITORY} `
+          -GitHubRef ${env:GITHUB_REF} `
+          -BuiltinPolicySetAssignmentManagementGroupId '${{ vars.RootManagementGroupID }}'
