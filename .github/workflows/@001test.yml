@@ -13,6 +13,6 @@ jobs:
               uses: actions/checkout@v3
 
             - name: Display Variable
-              run: echo "This is a $ENVIRONMENT environment variable"
+              run: echo ${{env.ENVIRONMENT}}
 
 
