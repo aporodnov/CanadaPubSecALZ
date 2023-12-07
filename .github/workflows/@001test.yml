@@ -15,8 +15,8 @@ jobs:
 
             - name: Display Variable for Lab
               if: vars.ENVIRONMENTNAME == 'bchealth-cloud-azure-alz-lab'
-              run: echo ${{ vars.ENVIRONMENT }}
+              run: echo ${{ env.ENVIRONMENT }}
 
             - name: Display Variable for Prod
               if: vars.ENVIRONMENTNAME == 'bchealth-cloud-azure-alz-main'
-              run: echo ${{ vars.ENVIRONMENT }}
+              run: echo ${{ env.ENVIRONMENT }}
