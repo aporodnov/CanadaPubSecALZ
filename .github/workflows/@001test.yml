@@ -4,7 +4,8 @@ on:
     workflow_dispatch:
 
 jobs:
-    display_env_name:
+    Display_Environment_with_Conditions:
+        name: test environmental variables
         runs-on: ubuntu-latest
         environment: ${{ github.ref == 'refs/heads/main' && 'Prod' || 'Lab' }}
 
@@ -12,5 +13,11 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v3
 
-            - name: Display Variable
+            - name: Display Variable for Lab
+              if: vars.ENVIRONMENTNAME == 'bchealth-cloud-azure-alz-lab'
               run: echo ${{ vars.ENVIRONMENT }}
+
+            - name: Display Variable for Prod
+              if: vars.ENVIRONMENTNAME == 'bchealth-cloud-azure-alz-main'
+              run: echo ${{ vars.ENVIRONMENT }}
+            
