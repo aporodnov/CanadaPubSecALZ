@@ -5,7 +5,7 @@ on:
 
 jobs:
     Display_Environment_with_Conditions:
-        name: test environmental variables
+        name: test environmental variables test2
         runs-on: ubuntu-latest
         environment: ${{ github.ref == 'refs/heads/main' && 'Prod' || 'Lab' }}
 
