@@ -19,6 +19,11 @@ jobs:
   pull_request_checks:
     name: Pull Request Check Job
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      checks: write
+      contents: read
+      pull-requests: read
 
     steps:
       - name: Checkout Repo
